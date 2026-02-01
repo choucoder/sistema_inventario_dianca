@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Productos totales -->
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-info">
+            <div class="inner">
+                <h3>{{ total_productos|default:"0" }}</h3>
+                <p>Productos Registrados</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-boxes"></i>
+            </div>
+            <a href="{% url 'producto_list' %}" class="small-box-footer">
+                Ver mas <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Bajo Stock -->
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-warning">
+            <div class="inner">
+                <h3>{{ alertas|length|default:"0" }}</h3>
+                <p>Productos Bajo Stock</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <a href="{% url 'producto_list' %}" class="small-box-footer">
+                Ver alertas <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Entradas del dia -->
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-success">
+            <div class="inner">
+                <h3>{{ entradas_hoy|default:"0" }}</h3>
+                <p>Entradas Hoy</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-truck-loading"></i>
+            </div>
+            <a href="{% url 'entrada_historial' %}" class="small-box-footer">
+                Ver entradas <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Proveedores -->
+    <div class="col-lg-3 col-6">
+        <div class="small-box bg-primary">
+            <div class="inner">
+                <h3>{{ total_proveedores|default:"0" }}</h3>
+                <p>Proveedores Activos</p>
+            </div>
+            <div class="icon">
+                <i class="fas fa-truck"></i>
+            </div>
+            <a href="{% url 'proveedor_list' %}" class="small-box-footer">
+                Ver proveedores <i class="fas fa-arrow-circle-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Alertas de bajo stock -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card card-warning">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    Alertas de Bajo Stock
+                </h3>
+                <div class="card-tools">
+                    <a href="{% url 'producto_list' %}" class="btn btn-tool" title="Ver todos">
+                        <i class="fas fa-expand"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                {% if alertas %}
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Codigo</th>
+                            <th>Producto</th>
+                            <th>Stock Actual</th>
+                            <th>Stock Minimo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for producto in alertas %}
+                        <tr>
+                            <td><a href="{% url 'producto_edit' producto.pk %}"><code>{{ producto.code }}</code></a></td>
+                            <td>{{ producto.name }}</td>
+                            <td>
+                                <span class="badge badge-danger">{{ producto.stock_actual }}</span>
+                            </td>
+                            <td>{{ producto.min_stock }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="p-3 text-center text-muted">
+                    <i class="fas fa-check-circle fa-2x mb-2"></i>
+                    <p>No hay alertas de bajo stock</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card card-info">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-history mr-2"></i>
+                    Ultimas Entradas
+                </h3>
+                <div class="card-tools">
+                    <a href="{% url 'entrada_historial' %}" class="btn btn-tool" title="Ver todas">
+                        <i class="fas fa-expand"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                {% if ultimas_entradas %}
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Producto</th>
+                            <th>Cantidad</th>
+                            <th>Proveedor</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for entrada in ultimas_entradas %}
+                        <tr>
+                            <td><a href="{% url 'entrada_detalle' entrada.pk %}">{{ entrada.created_at|date:"d/m/Y" }}</a></td>
+                            <td>{{ entrada.product.name }}</td>
+                            <td><span class="badge badge-info">{{ entrada.quantity }}</span></td>
+                            <td>{{ entrada.provider.name }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="p-3 text-center text-muted">
+                    <i class="fas fa-inbox fa-2x mb-2"></i>
+                    <p>No hay entradas recientes</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if usuario %}Editar{% else %}Nuevo{% endif %} Usuario{% endblock %}
+
+{% block page_title %}{% if usuario %}Editar{% else %}Nuevo{% endif %} Usuario{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'usuario_list' %}">Usuarios</a></li>
+<li class="breadcrumb-item active">{% if usuario %}Editar{% else %}Nuevo{% endif %}</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-{% if usuario %}user-edit{% else %}user-plus{% endif %} mr-2"></i>
+                    {% if usuario %}Editar Usuario{% else %}Nuevo Usuario{% endif %}
+                </h3>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="username">
+                                    Nombre de Usuario <span class="text-danger">*</span>
+                                </label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="username"
+                                       name="username"
+                                       value="{% if usuario %}{{ usuario.username }}{% else %}{{ username }}{% endif %}"
+                                       placeholder="Usuario"
+                                       maxlength="150"
+                                       required
+                                       autofocus>
+                                <small class="form-text text-muted">
+                                    Usado para iniciar sesion
+                                </small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="role">
+                                    Rol <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-control" id="role" name="role" required>
+                                    {% for value, label in roles %}
+                                    <option value="{{ value }}"
+                                        {% if usuario and usuario.role == value %}selected
+                                        {% elif role == value %}selected{% endif %}>
+                                        {{ label }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="first_name">
+                                    Nombre <span class="text-danger">*</span>
+                                </label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="first_name"
+                                       name="first_name"
+                                       value="{% if usuario %}{{ usuario.first_name }}{% else %}{{ first_name }}{% endif %}"
+                                       placeholder="Nombre"
+                                       maxlength="150"
+                                       required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="last_name">Apellido</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="last_name"
+                                       name="last_name"
+                                       value="{% if usuario %}{{ usuario.last_name }}{% else %}{{ last_name }}{% endif %}"
+                                       placeholder="Apellido"
+                                       maxlength="150">
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="password">
+                                    Contraseña {% if not usuario %}<span class="text-danger">*</span>{% endif %}
+                                </label>
+                                <input type="password"
+                                       class="form-control"
+                                       id="password"
+                                       name="password"
+                                       placeholder="{% if usuario %}Dejar vacio para no cambiar{% else %}Minimo 8 caracteres{% endif %}"
+                                       minlength="8"
+                                       {% if not usuario %}required{% endif %}>
+                                {% if usuario %}
+                                <small class="form-text text-muted">
+                                    Dejar vacio si no desea cambiar la Contraseña
+                                </small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="password_confirm">
+                                    Confirmar Contraseña {% if not usuario %}<span class="text-danger">*</span>{% endif %}
+                                </label>
+                                <input type="password"
+                                       class="form-control"
+                                       id="password_confirm"
+                                       name="password_confirm"
+                                       placeholder="Repita la Contraseña"
+                                       minlength="8"
+                                       {% if not usuario %}required{% endif %}>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if usuario %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="status">Estado</label>
+                                <select class="form-control" id="status" name="status">
+                                    <option value="active" {% if usuario.status == 'active' %}selected{% endif %}>
+                                        Activo
+                                    </option>
+                                    <option value="inactive" {% if usuario.status == 'inactive' %}selected{% endif %}>
+                                        Inactivo
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Ultimo Acceso</label>
+                                <input type="text"
+                                       class="form-control"
+                                       value="{% if usuario.last_login %}{{ usuario.last_login|date:'d/m/Y H:i' }}{% else %}Nunca{% endif %}"
+                                       disabled>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save mr-1"></i>
+                        {% if usuario %}Actualizar{% else %}Guardar{% endif %}
+                    </button>
+                    <a href="{% url 'usuario_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-times mr-1"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

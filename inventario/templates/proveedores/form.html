@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if proveedor %}Editar{% else %}Nuevo{% endif %} Proveedor{% endblock %}
+
+{% block page_title %}{% if proveedor %}Editar{% else %}Nuevo{% endif %} Proveedor{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'proveedor_list' %}">Proveedores</a></li>
+<li class="breadcrumb-item active">{% if proveedor %}Editar{% else %}Nuevo{% endif %}</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-{% if proveedor %}edit{% else %}plus{% endif %} mr-2"></i>
+                    {% if proveedor %}Editar Proveedor{% else %}Nuevo Proveedor{% endif %}
+                </h3>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="name">
+                                    Nombre <span class="text-danger">*</span>
+                                </label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="name"
+                                       name="name"
+                                       value="{% if proveedor %}{{ proveedor.name }}{% else %}{{ name }}{% endif %}"
+                                       placeholder="Nombre del proveedor"
+                                       maxlength="50"
+                                       required
+                                       autofocus>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="rif">
+                                    RIF <span class="text-danger">*</span>
+                                </label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="rif"
+                                       name="rif"
+                                       value="{% if proveedor %}{{ proveedor.rif }}{% else %}{{ rif }}{% endif %}"
+                                       placeholder="J-12345678-9"
+                                       maxlength="12"
+                                       required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="contact_name">Persona de Contacto</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="contact_name"
+                                       name="contact_name"
+                                       value="{% if proveedor %}{{ proveedor.contact_name }}{% else %}{{ contact_name }}{% endif %}"
+                                       placeholder="Nombre del contacto"
+                                       maxlength="50">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="phone">Telefono</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="phone"
+                                       name="phone"
+                                       value="{% if proveedor %}{{ proveedor.phone }}{% else %}{{ phone }}{% endif %}"
+                                       placeholder="0412-1234567"
+                                       maxlength="12">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="email">Correo Electronico</label>
+                                <input type="email"
+                                       class="form-control"
+                                       id="email"
+                                       name="email"
+                                       value="{% if proveedor %}{{ proveedor.email }}{% else %}{{ email }}{% endif %}"
+                                       placeholder="correo@ejemplo.com">
+                            </div>
+                        </div>
+                        {% if proveedor %}
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="status">Estado</label>
+                                <select class="form-control" id="status" name="status">
+                                    <option value="active" {% if proveedor.status == 'active' %}selected{% endif %}>
+                                        Activo
+                                    </option>
+                                    <option value="inactive" {% if proveedor.status == 'inactive' %}selected{% endif %}>
+                                        Inactivo
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save mr-1"></i>
+                        {% if proveedor %}Actualizar{% else %}Guardar{% endif %}
+                    </button>
+                    <a href="{% url 'proveedor_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-times mr-1"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

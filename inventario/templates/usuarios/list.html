@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Usuarios{% endblock %}
+
+{% block page_title %}Gestion de Usuarios{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Usuarios</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-users mr-2"></i>
+                    Listado de Usuarios
+                </h3>
+                <div class="card-tools">
+                    <a href="{% url 'usuario_create' %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus mr-1"></i> Nuevo Usuario
+                    </a>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0">
+                {% if usuarios %}
+                <table class="table table-hover text-nowrap">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">#</th>
+                            <th>Usuario</th>
+                            <th>Nombre Completo</th>
+                            <th>Rol</th>
+                            <th>Estado</th>
+                            <th>Ultimo Acceso</th>
+                            <th style="width: 150px;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for usuario in usuarios %}
+                        <tr>
+                            <td>{{ usuario.id }}</td>
+                            <td>
+                                <strong>{{ usuario.username }}</strong>
+                                {% if usuario.pk == request.user.pk %}
+                                <span class="badge badge-info">Tu</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{ usuario.first_name }} {{ usuario.last_name }}
+                                {% if not usuario.first_name and not usuario.last_name %}
+                                <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if usuario.role == 'admin' %}
+                                    <span class="badge badge-danger">{{ usuario.get_role_display }}</span>
+                                {% elif usuario.role == 'almacen' %}
+                                    <span class="badge badge-primary">{{ usuario.get_role_display }}</span>
+                                {% elif usuario.role == 'ventas' %}
+                                    <span class="badge badge-success">{{ usuario.get_role_display }}</span>
+                                {% elif usuario.role == 'compras' %}
+                                    <span class="badge badge-warning">{{ usuario.get_role_display }}</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">{{ usuario.get_role_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if usuario.status == 'active' %}
+                                    <span class="badge badge-success">Activo</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">Inactivo</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if usuario.last_login %}
+                                    {{ usuario.last_login|date:"d/m/Y H:i" }}
+                                {% else %}
+                                    <span class="text-muted">Nunca</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'usuario_edit' usuario.pk %}"
+                                   class="btn btn-warning btn-sm"
+                                   title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                {% if usuario.pk != request.user.pk %}
+                                <a href="{% url 'usuario_delete' usuario.pk %}"
+                                   class="btn btn-danger btn-sm"
+                                   title="Eliminar"
+                                   onclick="return confirm('Esta seguro de eliminar este usuario?');">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                                {% else %}
+                                <button class="btn btn-secondary btn-sm" disabled title="No puede eliminarse a si mismo">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="p-4 text-center text-muted">
+                    <i class="fas fa-users fa-3x mb-3"></i>
+                    <p>No hay usuarios registrados</p>
+                    <a href="{% url 'usuario_create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus mr-1"></i> Crear primer usuario
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            {% if usuarios %}
+            <div class="card-footer clearfix">
+                <div class="float-left">
+                    <span class="text-muted">Total: {{ usuarios|length }} usuario(s)</span>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

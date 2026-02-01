@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Iniciar Inventario Fisico{% endblock %}
+
+{% block page_title %}Iniciar Inventario Fisico{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'inventario_sesiones' %}">Inventario Fisico</a></li>
+<li class="breadcrumb-item active">Iniciar</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-clipboard-check mr-2"></i>
+                    Nueva Sesion de Inventario
+                </h3>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-info-circle mr-2"></i>Instrucciones</h5>
+                        <ol class="mb-0">
+                            <li>Al iniciar, se creara una sesion para registrar los conteos</li>
+                            <li>Escanee o ingrese el codigo de cada producto y su cantidad fisica</li>
+                            <li>Puede pausar y continuar en cualquier momento</li>
+                            <li>Al finalizar, vera las diferencias entre el sistema y el conteo fisico</li>
+                            <li>Confirme la conciliacion para ajustar el stock del sistema</li>
+                        </ol>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notas">Notas (opcional)</label>
+                        <textarea class="form-control"
+                                  id="notas"
+                                  name="notas"
+                                  rows="3"
+                                  placeholder="Ej: Inventario mensual, Auditoria zona A, etc."></textarea>
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-play mr-1"></i> Iniciar Inventario
+                    </button>
+                    <a href="{% url 'inventario_sesiones' %}" class="btn btn-secondary">
+                        <i class="fas fa-times mr-1"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

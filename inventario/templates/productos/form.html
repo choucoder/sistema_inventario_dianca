@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if producto %}Editar{% else %}Nuevo{% endif %} Producto{% endblock %}
+
+{% block page_title %}{% if producto %}Editar{% else %}Nuevo{% endif %} Producto{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'producto_list' %}">Productos</a></li>
+<li class="breadcrumb-item active">{% if producto %}Editar{% else %}Nuevo{% endif %}</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 offset-md-1">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-{% if producto %}edit{% else %}plus{% endif %} mr-2"></i>
+                    {% if producto %}Editar Producto{% else %}Nuevo Producto{% endif %}
+                </h3>
+            </div>
+            <form method="post">
+                {% csrf_token %}
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="code">
+                                    Codigo <span class="text-danger">*</span>
+                                </label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="code"
+                                       name="code"
+                                       value="{% if producto %}{{ producto.code }}{% else %}{{ code }}{% endif %}"
+                                       placeholder="COD-001"
+                                       maxlength="50"
+                                       required
+                                       autofocus>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <label for="name">
+                                    Nombre <span class="text-danger">*</span>
+                                </label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="name"
+                                       name="name"
+                                       value="{% if producto %}{{ producto.name }}{% else %}{{ name }}{% endif %}"
+                                       placeholder="Nombre del producto"
+                                       maxlength="200"
+                                       required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="description">Descripcion</label>
+                                <textarea class="form-control"
+                                          id="description"
+                                          name="description"
+                                          rows="2"
+                                          placeholder="Descripcion del producto (opcional)">{% if producto %}{{ producto.description|default:'' }}{% else %}{{ description }}{% endif %}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="category">
+                                    Categoria <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-control" id="category" name="category" required>
+                                    <option value="">-- Seleccione --</option>
+                                    {% for cat in categorias %}
+                                    <option value="{{ cat.id }}"
+                                        {% if producto and producto.category_id == cat.id %}selected
+                                        {% elif category_id|stringformat:"s" == cat.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ cat.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="unit">
+                                    Unidad de Medida <span class="text-danger">*</span>
+                                </label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="unit"
+                                       name="unit"
+                                       value="{% if producto %}{{ producto.unit }}{% else %}{{ unit }}{% endif %}"
+                                       placeholder="Ej: UND, KG, LT"
+                                       maxlength="20"
+                                       required>
+                                <small class="form-text text-muted">Ej: UND, KG, LT, MT, CJ</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label for="min_stock">Stock Minimo</label>
+                                <input type="number"
+                                       class="form-control"
+                                       id="min_stock"
+                                       name="min_stock"
+                                       value="{% if producto %}{{ producto.min_stock }}{% else %}{{ min_stock|default:'0' }}{% endif %}"
+                                       min="0"
+                                       placeholder="0">
+                                <small class="form-text text-muted">Alerta cuando el stock sea menor o igual</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="location">Ubicacion en Almacen</label>
+                                <input type="text"
+                                       class="form-control"
+                                       id="location"
+                                       name="location"
+                                       value="{% if producto %}{{ producto.location }}{% else %}{{ location }}{% endif %}"
+                                       placeholder="Ej: Estante A, Pasillo 3"
+                                       maxlength="100">
+                            </div>
+                        </div>
+                        {% if producto %}
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="stock_actual">Stock Actual</label>
+                                <input type="text"
+                                       class="form-control"
+                                       value="{{ producto.stock_actual }}"
+                                       disabled>
+                                <small class="form-text text-muted">Se modifica via entradas</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label for="status">Estado</label>
+                                <select class="form-control" id="status" name="status">
+                                    <option value="active" {% if producto.status == 'active' %}selected{% endif %}>
+                                        Activo
+                                    </option>
+                                    <option value="inactive" {% if producto.status == 'inactive' %}selected{% endif %}>
+                                        Inactivo
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save mr-1"></i>
+                        {% if producto %}Actualizar{% else %}Guardar{% endif %}
+                    </button>
+                    <a href="{% url 'producto_list' %}" class="btn btn-secondary">
+                        <i class="fas fa-times mr-1"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+
+{% block title %}Resultados de Inventario{% endblock %}
+
+{% block page_title %}Resultados - Sesion #{{ sesion.id }}{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'inventario_sesiones' %}">Inventario Fisico</a></li>
+<li class="breadcrumb-item active">Resultados</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Resumen -->
+    <div class="col-md-4">
+        <div class="card card-{% if sesion.status == 'conciliado' %}success{% elif conteos_con_diferencia %}warning{% else %}success{% endif %}">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-chart-pie mr-2"></i>
+                    Resumen
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-6 text-center border-right">
+                        <h2 class="text-primary">{{ sesion.total_productos }}</h2>
+                        <p class="text-muted mb-0">Productos Contados</p>
+                    </div>
+                    <div class="col-6 text-center">
+                        <h2 class="{% if sesion.productos_con_diferencia > 0 %}text-warning{% else %}text-success{% endif %}">
+                            {{ sesion.productos_con_diferencia }}
+                        </h2>
+                        <p class="text-muted mb-0">Con Diferencias</p>
+                    </div>
+                </div>
+
+                <hr>
+
+                <table class="table table-sm table-borderless mb-0">
+                    <tr>
+                        <td class="text-muted">Estado:</td>
+                        <td class="text-right">
+                            {% if sesion.status == 'finalizado' %}
+                                <span class="badge badge-warning">Pendiente Conciliar</span>
+                            {% elif sesion.status == 'conciliado' %}
+                                <span class="badge badge-success">Conciliado</span>
+                            {% else %}
+                                <span class="badge badge-secondary">{{ sesion.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">Iniciada:</td>
+                        <td class="text-right">{{ sesion.created_at|date:"d/m/Y H:i" }}</td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">Finalizada:</td>
+                        <td class="text-right">{{ sesion.finished_at|date:"d/m/Y H:i" }}</td>
+                    </tr>
+                    {% if sesion.conciliated_at %}
+                    <tr>
+                        <td class="text-muted">Conciliada:</td>
+                        <td class="text-right">{{ sesion.conciliated_at|date:"d/m/Y H:i" }}</td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <td class="text-muted">Usuario:</td>
+                        <td class="text-right">{{ sesion.user.get_full_name|default:sesion.user.username }}</td>
+                    </tr>
+                </table>
+
+                {% if sesion.notas %}
+                <hr>
+                <p class="mb-0"><strong>Notas:</strong> {{ sesion.notas }}</p>
+                {% endif %}
+            </div>
+
+            {% if sesion.status == 'finalizado' and conteos_con_diferencia %}
+            <div class="card-footer">
+                <form method="post" action="{% url 'inventario_conciliar' sesion.pk %}" id="formConciliar">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success btn-block">
+                        <i class="fas fa-sync mr-1"></i> Conciliar Inventario
+                    </button>
+                </form>
+                <small class="text-muted d-block text-center mt-2">
+                    Esto ajustara el stock del sistema a los valores contados
+                </small>
+            </div>
+            {% elif sesion.status == 'finalizado' and not conteos_con_diferencia %}
+            <div class="card-footer">
+                <div class="alert alert-success mb-0">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    El inventario fisico coincide con el sistema. No hay ajustes necesarios.
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <a href="{% url 'inventario_sesiones' %}" class="btn btn-secondary btn-block">
+            <i class="fas fa-arrow-left mr-1"></i> Volver a Sesiones
+        </a>
+    </div>
+
+    <!-- Detalle de diferencias -->
+    <div class="col-md-8">
+        {% if conteos_con_diferencia %}
+        <div class="card card-warning">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    Productos con Diferencias ({{ conteos_con_diferencia|length }})
+                </h3>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Ubicacion</th>
+                            <th class="text-center">Stock Sistema</th>
+                            <th class="text-center">Conteo Fisico</th>
+                            <th class="text-center">Diferencia</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for conteo in conteos_con_diferencia %}
+                        <tr>
+                            <td>
+                                <strong>{{ conteo.product.name }}</strong>
+                                <br>
+                                <small class="text-muted"><code>{{ conteo.product.code }}</code></small>
+                            </td>
+                            <td>{{ conteo.product.location|default:"-" }}</td>
+                            <td class="text-center">{{ conteo.stock_sistema }}</td>
+                            <td class="text-center">{{ conteo.cantidad_contada }}</td>
+                            <td class="text-center">
+                                {% if conteo.diferencia > 0 %}
+                                    <span class="badge badge-success" style="font-size: 1rem;">
+                                        <i class="fas fa-arrow-up"></i> +{{ conteo.diferencia }}
+                                    </span>
+                                    <br>
+                                    <small class="text-success">Sobrante</small>
+                                {% else %}
+                                    <span class="badge badge-danger" style="font-size: 1rem;">
+                                        <i class="fas fa-arrow-down"></i> {{ conteo.diferencia }}
+                                    </span>
+                                    <br>
+                                    <small class="text-danger">Faltante</small>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if conteos_correctos %}
+        <div class="card card-success {% if conteos_con_diferencia %}collapsed-card{% endif %}">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    Productos Correctos ({{ conteos_correctos|length }})
+                </h3>
+                <div class="card-tools">
+                    <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                        <i class="fas fa-{% if conteos_con_diferencia %}plus{% else %}minus{% endif %}"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0">
+                <table class="table table-hover table-sm">
+                    <thead>
+                        <tr>
+                            <th>Producto</th>
+                            <th>Ubicacion</th>
+                            <th class="text-center">Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for conteo in conteos_correctos %}
+                        <tr>
+                            <td>
+                                {{ conteo.product.name }}
+                                <small class="text-muted">(<code>{{ conteo.product.code }}</code>)</small>
+                            </td>
+                            <td>{{ conteo.product.location|default:"-" }}</td>
+                            <td class="text-center">
+                                <span class="badge badge-success">{{ conteo.cantidad_contada }}</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('#formConciliar').on('submit', function(e) {
+        if (!confirm('¿Esta seguro de conciliar el inventario?\n\nEsto ajustara el stock del sistema a los valores del conteo fisico. Esta accion no se puede deshacer.')) {
+            e.preventDefault();
+            return false;
+        }
+    });
+});
+</script>
+{% endblock %}

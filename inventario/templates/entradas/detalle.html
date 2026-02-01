@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalle de Entrada{% endblock %}
+
+{% block page_title %}Detalle de Entrada #{{ entrada.id }}{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'entrada_historial' %}">Entradas</a></li>
+<li class="breadcrumb-item active">Detalle</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-file-alt mr-2"></i>
+                    Entrada #{{ entrada.id }}
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="text-primary mb-3">
+                            <i class="fas fa-box mr-2"></i>Producto
+                        </h5>
+                        <table class="table table-sm table-borderless">
+                            <tr>
+                                <td class="text-muted" style="width: 120px;">Codigo:</td>
+                                <td><code>{{ entrada.product.code }}</code></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Nombre:</td>
+                                <td><strong>{{ entrada.product.name }}</strong></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Categoria:</td>
+                                <td>{{ entrada.product.category.name }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Ubicacion:</td>
+                                <td>{{ entrada.product.location|default:"-" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="text-primary mb-3">
+                            <i class="fas fa-truck mr-2"></i>Proveedor
+                        </h5>
+                        <table class="table table-sm table-borderless">
+                            <tr>
+                                <td class="text-muted" style="width: 120px;">Nombre:</td>
+                                <td><strong>{{ entrada.provider.name }}</strong></td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">RIF:</td>
+                                <td><code>{{ entrada.provider.rif }}</code></td>
+                            </tr>
+                            {% if entrada.provider.contact_name %}
+                            <tr>
+                                <td class="text-muted">Contacto:</td>
+                                <td>{{ entrada.provider.contact_name }}</td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </div>
+                </div>
+
+                <hr>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5 class="text-primary mb-3">
+                            <i class="fas fa-clipboard-list mr-2"></i>Detalle de Entrada
+                        </h5>
+                        <table class="table table-sm table-borderless">
+                            <tr>
+                                <td class="text-muted" style="width: 120px;">Cantidad:</td>
+                                <td>
+                                    <span class="badge badge-success" style="font-size: 1rem;">
+                                        {{ entrada.quantity }}
+                                    </span>
+                                    {{ entrada.product.unit }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Costo Total:</td>
+                                <td>
+                                    {% if entrada.total_cost %}
+                                        <strong>${{ entrada.total_cost|floatformat:2 }}</strong>
+                                    {% else %}
+                                        <span class="text-muted">No registrado</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% if entrada.total_cost and entrada.quantity %}
+                            <tr>
+                                <td class="text-muted">Costo Unitario:</td>
+                                <td>${{ entrada.total_cost|divisibleby:entrada.quantity|floatformat:2 }}</td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="text-primary mb-3">
+                            <i class="fas fa-info-circle mr-2"></i>Informacion de Registro
+                        </h5>
+                        <table class="table table-sm table-borderless">
+                            <tr>
+                                <td class="text-muted" style="width: 120px;">Fecha:</td>
+                                <td>{{ entrada.created_at|date:"d/m/Y H:i" }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-muted">Registrado por:</td>
+                                <td>{{ entrada.user.get_full_name|default:entrada.user.username }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'entrada_historial' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left mr-1"></i> Volver al Historial
+                </a>
+                <a href="{% url 'entrada_registrar' %}" class="btn btn-primary">
+                    <i class="fas fa-plus mr-1"></i> Nueva Entrada
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

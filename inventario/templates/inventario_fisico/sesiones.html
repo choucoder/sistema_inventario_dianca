@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block title %}Inventario Fisico{% endblock %}
+
+{% block page_title %}Inventario Fisico{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Inventario Fisico</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-clipboard-check mr-2"></i>
+                    Sesiones de Inventario
+                </h3>
+                <div class="card-tools">
+                    <a href="{% url 'inventario_iniciar' %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus mr-1"></i> Nueva Sesion
+                    </a>
+                </div>
+            </div>
+            <div class="card-body table-responsive p-0">
+                {% if sesiones %}
+                <table class="table table-hover text-nowrap">
+                    <thead>
+                        <tr>
+                            <th style="width: 50px;">#</th>
+                            <th>Fecha Inicio</th>
+                            <th>Usuario</th>
+                            <th class="text-center">Productos</th>
+                            <th class="text-center">Diferencias</th>
+                            <th>Estado</th>
+                            <th>Fecha Cierre</th>
+                            <th style="width: 150px;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for sesion in sesiones %}
+                        <tr>
+                            <td>{{ sesion.id }}</td>
+                            <td>
+                                {{ sesion.created_at|date:"d/m/Y" }}
+                                <br>
+                                <small class="text-muted">{{ sesion.created_at|time:"H:i" }}</small>
+                            </td>
+                            <td>{{ sesion.user.get_full_name|default:sesion.user.username }}</td>
+                            <td class="text-center">
+                                <span class="badge badge-info">{{ sesion.total_productos }}</span>
+                            </td>
+                            <td class="text-center">
+                                {% if sesion.productos_con_diferencia > 0 %}
+                                    <span class="badge badge-warning">{{ sesion.productos_con_diferencia }}</span>
+                                {% else %}
+                                    <span class="badge badge-success">0</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if sesion.status == 'en_proceso' %}
+                                    <span class="badge badge-primary">
+                                        <i class="fas fa-spinner fa-spin"></i> En Proceso
+                                    </span>
+                                {% elif sesion.status == 'finalizado' %}
+                                    <span class="badge badge-warning">
+                                        <i class="fas fa-clock"></i> Pendiente Conciliar
+                                    </span>
+                                {% elif sesion.status == 'conciliado' %}
+                                    <span class="badge badge-success">
+                                        <i class="fas fa-check"></i> Conciliado
+                                    </span>
+                                {% else %}
+                                    <span class="badge badge-secondary">
+                                        <i class="fas fa-times"></i> Cancelado
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if sesion.conciliated_at %}
+                                    {{ sesion.conciliated_at|date:"d/m/Y H:i" }}
+                                {% elif sesion.finished_at %}
+                                    {{ sesion.finished_at|date:"d/m/Y H:i" }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if sesion.status == 'en_proceso' %}
+                                    <a href="{% url 'inventario_conteo' sesion.pk %}"
+                                       class="btn btn-primary btn-sm"
+                                       title="Continuar">
+                                        <i class="fas fa-play"></i>
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'inventario_resultados' sesion.pk %}"
+                                       class="btn btn-info btn-sm"
+                                       title="Ver Resultados">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                {% endif %}
+                                {% if sesion.status == 'en_proceso' or sesion.status == 'finalizado' %}
+                                    <a href="{% url 'inventario_cancelar' sesion.pk %}"
+                                       class="btn btn-danger btn-sm"
+                                       title="Cancelar">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="p-4 text-center text-muted">
+                    <i class="fas fa-clipboard-list fa-3x mb-3"></i>
+                    <p>No hay sesiones de inventario registradas</p>
+                    <a href="{% url 'inventario_iniciar' %}" class="btn btn-primary">
+                        <i class="fas fa-plus mr-1"></i> Iniciar Inventario Fisico
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            {% if sesiones %}
+            <div class="card-footer clearfix">
+                <div class="float-left">
+                    <span class="text-muted">Total: {{ sesiones|length }} sesion(es)</span>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

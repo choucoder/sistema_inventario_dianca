@@ -1,0 +1,266 @@
+{% extends 'base.html' %}
+
+{% block title %}Registrar Entrada{% endblock %}
+
+{% block page_title %}Registrar Entrada de Mercancia{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'entrada_historial' %}">Entradas</a></li>
+<li class="breadcrumb-item active">Registrar</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-truck-loading mr-2"></i>
+                    Nueva Entrada
+                </h3>
+            </div>
+            <form method="post" id="formEntrada">
+                {% csrf_token %}
+                <div class="card-body">
+                    <!-- Busqueda de producto -->
+                    <div class="form-group">
+                        <label for="product_code">
+                            Codigo del Producto <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <input type="text"
+                                   class="form-control"
+                                   id="product_code"
+                                   name="product_code"
+                                   value="{{ product_code }}"
+                                   placeholder="Escanee o ingrese el codigo"
+                                   maxlength="50"
+                                   required
+                                   autofocus>
+                            <div class="input-group-append">
+                                <button type="button" class="btn btn-info" id="btnBuscar">
+                                    <i class="fas fa-search"></i> Buscar
+                                </button>
+                            </div>
+                        </div>
+                        <small class="form-text text-muted">
+                            Presione Enter o haga clic en Buscar para verificar el producto
+                        </small>
+                    </div>
+
+                    <!-- Info del producto (se muestra al buscar) -->
+                    <div id="productInfo" class="card card-outline card-info mb-3" style="display: none;">
+                        <div class="card-header">
+                            <h3 class="card-title">
+                                <i class="fas fa-box mr-2"></i>
+                                <span id="productName">-</span>
+                            </h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p class="mb-1"><strong>Categoria:</strong> <span id="productCategory">-</span></p>
+                                    <p class="mb-1"><strong>Unidad:</strong> <span id="productUnit">-</span></p>
+                                    <p class="mb-0"><strong>Ubicacion:</strong> <span id="productLocation">-</span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p class="mb-1">
+                                        <strong>Stock Actual:</strong>
+                                        <span id="productStock" class="badge">-</span>
+                                    </p>
+                                    <p class="mb-1"><strong>Stock Minimo:</strong> <span id="productMinStock">-</span></p>
+                                    <p class="mb-0" id="stockAlert"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Error de producto no encontrado -->
+                    <div id="productError" class="alert alert-danger" style="display: none;">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        <span id="productErrorMsg"></span>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="provider">
+                                    Proveedor <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-control" id="provider" name="provider" required>
+                                    <option value="">-- Seleccione Proveedor --</option>
+                                    {% for prov in proveedores %}
+                                    <option value="{{ prov.id }}" {% if provider_id|stringformat:"s" == prov.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ prov.name }} ({{ prov.rif }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="quantity">
+                                    Cantidad <span class="text-danger">*</span>
+                                </label>
+                                <input type="number"
+                                       class="form-control"
+                                       id="quantity"
+                                       name="quantity"
+                                       value="{{ quantity }}"
+                                       min="1"
+                                       placeholder="0"
+                                       required>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label for="total_cost">Costo Total</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text">$</span>
+                                    </div>
+                                    <input type="number"
+                                           class="form-control"
+                                           id="total_cost"
+                                           name="total_cost"
+                                           value="{{ total_cost }}"
+                                           min="0"
+                                           step="0.01"
+                                           placeholder="0.00">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <button type="submit" class="btn btn-primary" id="btnSubmit">
+                        <i class="fas fa-save mr-1"></i> Registrar Entrada
+                    </button>
+                    <a href="{% url 'entrada_historial' %}" class="btn btn-secondary">
+                        <i class="fas fa-times mr-1"></i> Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card card-info">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    Instrucciones
+                </h3>
+            </div>
+            <div class="card-body">
+                <ol class="mb-0">
+                    <li class="mb-2">Escanee o ingrese el codigo del producto</li>
+                    <li class="mb-2">Verifique que la informacion del producto sea correcta</li>
+                    <li class="mb-2">Seleccione el proveedor de la mercancia</li>
+                    <li class="mb-2">Ingrese la cantidad recibida</li>
+                    <li class="mb-2">Opcionalmente ingrese el costo total</li>
+                    <li>Haga clic en "Registrar Entrada"</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="card card-warning">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    Importante
+                </h3>
+            </div>
+            <div class="card-body">
+                <p class="mb-0">
+                    Al registrar la entrada, el stock del producto se actualizara automaticamente.
+                    Verifique la cantidad antes de confirmar.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    const btnBuscar = $('#btnBuscar');
+    const inputCode = $('#product_code');
+    const productInfo = $('#productInfo');
+    const productError = $('#productError');
+
+    function buscarProducto() {
+        const code = inputCode.val().trim();
+        if (!code) {
+            productInfo.hide();
+            productError.hide();
+            return;
+        }
+
+        btnBuscar.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+
+        $.ajax({
+            url: '{% url "buscar_producto" %}',
+            data: { code: code },
+            success: function(data) {
+                if (data.found) {
+                    productError.hide();
+                    $('#productName').text(data.product.name);
+                    $('#productCategory').text(data.product.category);
+                    $('#productUnit').text(data.product.unit);
+                    $('#productLocation').text(data.product.location);
+                    $('#productMinStock').text(data.product.min_stock);
+
+                    const stockBadge = $('#productStock');
+                    stockBadge.text(data.product.stock_actual);
+                    stockBadge.removeClass('badge-success badge-danger');
+                    stockBadge.addClass('badge-' + data.product.stock_status);
+
+                    const alertDiv = $('#stockAlert');
+                    if (data.product.stock_status === 'danger') {
+                        alertDiv.html('<span class="text-danger"><i class="fas fa-exclamation-triangle"></i> ' + data.product.stock_message + '</span>');
+                    } else {
+                        alertDiv.html('<span class="text-success"><i class="fas fa-check-circle"></i> ' + data.product.stock_message + '</span>');
+                    }
+
+                    productInfo.show();
+                } else {
+                    productInfo.hide();
+                    $('#productErrorMsg').text(data.error);
+                    productError.show();
+                }
+            },
+            error: function() {
+                productInfo.hide();
+                $('#productErrorMsg').text('Error al buscar el producto');
+                productError.show();
+            },
+            complete: function() {
+                btnBuscar.prop('disabled', false).html('<i class="fas fa-search"></i> Buscar');
+            }
+        });
+    }
+
+    // Buscar al presionar Enter en el campo de codigo
+    inputCode.on('keypress', function(e) {
+        if (e.which === 13) {
+            e.preventDefault();
+            buscarProducto();
+        }
+    });
+
+    // Buscar al hacer clic en el boton
+    btnBuscar.on('click', buscarProducto);
+
+    // Buscar automaticamente si ya hay un codigo (recarga por error)
+    if (inputCode.val().trim()) {
+        buscarProducto();
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block title %}Cancelar Sesion{% endblock %}
+
+{% block page_title %}Cancelar Sesion de Inventario{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'inventario_sesiones' %}">Inventario Fisico</a></li>
+<li class="breadcrumb-item active">Cancelar</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card card-danger">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    Confirmar Cancelacion
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <i class="fas fa-times-circle fa-4x text-danger mb-3"></i>
+                    <h4>¿Esta seguro de cancelar esta sesion?</h4>
+                </div>
+
+                <div class="callout callout-info">
+                    <h5><i class="fas fa-clipboard-check mr-2"></i>Sesion #{{ sesion.id }}</h5>
+                    <p class="mb-1"><strong>Iniciada:</strong> {{ sesion.created_at|date:"d/m/Y H:i" }}</p>
+                    <p class="mb-1"><strong>Productos contados:</strong> {{ sesion.total_productos }}</p>
+                    {% if sesion.notas %}
+                    <p class="mb-0"><strong>Notas:</strong> {{ sesion.notas }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <strong>Atencion:</strong> Se perderan todos los conteos registrados en esta sesion.
+                    El stock del sistema no sera modificado.
+                </div>
+            </div>
+            <div class="card-footer text-center">
+                <form method="post" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-times mr-1"></i> Si, Cancelar Sesion
+                    </button>
+                </form>
+                <a href="{% if sesion.status == 'en_proceso' %}{% url 'inventario_conteo' sesion.pk %}{% else %}{% url 'inventario_resultados' sesion.pk %}{% endif %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left mr-1"></i> Volver
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

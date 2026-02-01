@@ -1,0 +1,321 @@
+{% extends 'base.html' %}
+
+{% block title %}Conteo de Inventario{% endblock %}
+
+{% block page_title %}Conteo de Inventario - Sesion #{{ sesion.id }}{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'inventario_sesiones' %}">Inventario Fisico</a></li>
+<li class="breadcrumb-item active">Conteo</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Panel de escaneo -->
+    <div class="col-md-5">
+        <div class="card card-primary">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-barcode mr-2"></i>
+                    Registrar Conteo
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label for="product_code">Codigo del Producto</label>
+                    <input type="text"
+                           class="form-control form-control-lg"
+                           id="product_code"
+                           placeholder="Escanee o ingrese codigo"
+                           autofocus>
+                </div>
+
+                <div class="form-group">
+                    <label for="cantidad">Cantidad Fisica</label>
+                    <input type="number"
+                           class="form-control form-control-lg"
+                           id="cantidad"
+                           min="0"
+                           value="0"
+                           placeholder="0">
+                </div>
+
+                <button type="button" class="btn btn-primary btn-lg btn-block" id="btnRegistrar">
+                    <i class="fas fa-plus mr-1"></i> Registrar Conteo
+                </button>
+
+                <!-- Feedback -->
+                <div id="feedback" class="mt-3" style="display: none;"></div>
+            </div>
+        </div>
+
+        <!-- Info de sesion -->
+        <div class="card card-info">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    Informacion de Sesion
+                </h3>
+            </div>
+            <div class="card-body">
+                <p class="mb-1"><strong>Iniciada:</strong> {{ sesion.created_at|date:"d/m/Y H:i" }}</p>
+                <p class="mb-1"><strong>Usuario:</strong> {{ sesion.user.get_full_name|default:sesion.user.username }}</p>
+                {% if sesion.notas %}
+                <p class="mb-0"><strong>Notas:</strong> {{ sesion.notas }}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Acciones -->
+        <div class="card">
+            <div class="card-body">
+                <form method="post" action="{% url 'inventario_finalizar' sesion.pk %}" id="formFinalizar">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success btn-block" id="btnFinalizar">
+                        <i class="fas fa-check mr-1"></i> Finalizar y Ver Diferencias
+                    </button>
+                </form>
+                <a href="{% url 'inventario_cancelar' sesion.pk %}" class="btn btn-danger btn-block mt-2">
+                    <i class="fas fa-times mr-1"></i> Cancelar Sesion
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lista de conteos -->
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-list mr-2"></i>
+                    Productos Contados
+                    <span class="badge badge-info ml-2" id="totalConteos">{{ conteos|length }}</span>
+                </h3>
+            </div>
+            <div class="card-body table-responsive p-0" style="max-height: 500px; overflow-y: auto;">
+                <table class="table table-hover table-sm" id="tablaConteos">
+                    <thead class="sticky-top bg-light">
+                        <tr>
+                            <th>Producto</th>
+                            <th class="text-center">Sistema</th>
+                            <th class="text-center">Contado</th>
+                            <th class="text-center">Diferencia</th>
+                            <th style="width: 50px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="listaConteos">
+                        {% for conteo in conteos %}
+                        <tr id="conteo-{{ conteo.id }}">
+                            <td>
+                                <strong>{{ conteo.product.name }}</strong>
+                                <br>
+                                <small class="text-muted"><code>{{ conteo.product.code }}</code></small>
+                            </td>
+                            <td class="text-center">{{ conteo.stock_sistema }}</td>
+                            <td class="text-center">{{ conteo.cantidad_contada }}</td>
+                            <td class="text-center">
+                                {% if conteo.diferencia > 0 %}
+                                    <span class="badge badge-success">+{{ conteo.diferencia }}</span>
+                                {% elif conteo.diferencia < 0 %}
+                                    <span class="badge badge-danger">{{ conteo.diferencia }}</span>
+                                {% else %}
+                                    <span class="badge badge-secondary">0</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button type="button"
+                                        class="btn btn-danger btn-xs btn-eliminar"
+                                        data-id="{{ conteo.id }}"
+                                        title="Eliminar">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr id="sinConteos">
+                            <td colspan="5" class="text-center text-muted py-4">
+                                <i class="fas fa-inbox fa-2x mb-2"></i>
+                                <p class="mb-0">No hay conteos registrados</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    const inputCode = $('#product_code');
+    const inputCantidad = $('#cantidad');
+    const btnRegistrar = $('#btnRegistrar');
+    const feedback = $('#feedback');
+    const listaConteos = $('#listaConteos');
+    const totalConteos = $('#totalConteos');
+
+    function mostrarFeedback(tipo, mensaje) {
+        feedback.removeClass('alert-success alert-danger alert-warning')
+                .addClass('alert alert-' + tipo)
+                .html(mensaje)
+                .show();
+
+        setTimeout(function() {
+            feedback.fadeOut();
+        }, 3000);
+    }
+
+    function registrarConteo() {
+        const code = inputCode.val().trim();
+        const cantidad = inputCantidad.val();
+
+        if (!code) {
+            mostrarFeedback('warning', '<i class="fas fa-exclamation-triangle"></i> Ingrese el codigo del producto');
+            inputCode.focus();
+            return;
+        }
+
+        btnRegistrar.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Registrando...');
+
+        $.ajax({
+            url: '{% url "inventario_registrar_conteo" sesion.pk %}',
+            method: 'POST',
+            data: {
+                product_code: code,
+                cantidad: cantidad,
+                csrfmiddlewaretoken: '{{ csrf_token }}'
+            },
+            success: function(data) {
+                if (data.success) {
+                    mostrarFeedback('success', '<i class="fas fa-check"></i> ' + data.message);
+
+                    // Remover fila "sin conteos" si existe
+                    $('#sinConteos').remove();
+
+                    // Verificar si ya existe la fila del producto
+                    const existingRow = listaConteos.find(`tr:contains("${data.data.product_code}")`);
+
+                    const diffBadge = data.data.diferencia > 0
+                        ? `<span class="badge badge-success">+${data.data.diferencia}</span>`
+                        : (data.data.diferencia < 0
+                            ? `<span class="badge badge-danger">${data.data.diferencia}</span>`
+                            : `<span class="badge badge-secondary">0</span>`);
+
+                    if (existingRow.length > 0) {
+                        // Actualizar fila existente
+                        existingRow.find('td:eq(2)').text(data.data.cantidad_contada);
+                        existingRow.find('td:eq(3)').html(diffBadge);
+                        existingRow.addClass('table-warning');
+                        setTimeout(() => existingRow.removeClass('table-warning'), 1000);
+                    } else {
+                        // Agregar nueva fila al inicio
+                        const newRow = `
+                            <tr class="table-success">
+                                <td>
+                                    <strong>${data.data.product_name}</strong>
+                                    <br>
+                                    <small class="text-muted"><code>${data.data.product_code}</code></small>
+                                </td>
+                                <td class="text-center">${data.data.stock_sistema}</td>
+                                <td class="text-center">${data.data.cantidad_contada}</td>
+                                <td class="text-center">${diffBadge}</td>
+                                <td>
+                                    <button type="button" class="btn btn-danger btn-xs btn-eliminar" title="Eliminar">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                        listaConteos.prepend(newRow);
+
+                        // Actualizar contador
+                        totalConteos.text(parseInt(totalConteos.text()) + 1);
+
+                        setTimeout(() => listaConteos.find('tr:first').removeClass('table-success'), 1000);
+                    }
+
+                    // Limpiar campos
+                    inputCode.val('').focus();
+                    inputCantidad.val('0');
+                } else {
+                    mostrarFeedback('danger', '<i class="fas fa-times"></i> ' + data.error);
+                    inputCode.focus();
+                }
+            },
+            error: function() {
+                mostrarFeedback('danger', '<i class="fas fa-times"></i> Error al registrar conteo');
+            },
+            complete: function() {
+                btnRegistrar.prop('disabled', false).html('<i class="fas fa-plus mr-1"></i> Registrar Conteo');
+            }
+        });
+    }
+
+    // Registrar al presionar Enter en codigo
+    inputCode.on('keypress', function(e) {
+        if (e.which === 13) {
+            e.preventDefault();
+            inputCantidad.focus().select();
+        }
+    });
+
+    // Registrar al presionar Enter en cantidad
+    inputCantidad.on('keypress', function(e) {
+        if (e.which === 13) {
+            e.preventDefault();
+            registrarConteo();
+        }
+    });
+
+    // Registrar al hacer clic
+    btnRegistrar.on('click', registrarConteo);
+
+    // Eliminar conteo
+    $(document).on('click', '.btn-eliminar', function() {
+        const btn = $(this);
+        const row = btn.closest('tr');
+        const conteoId = btn.data('id');
+
+        if (!confirm('¿Eliminar este conteo?')) return;
+
+        $.ajax({
+            url: '{% url "inventario_eliminar_conteo" sesion.pk 0 %}'.replace('0', conteoId || '0'),
+            method: 'POST',
+            data: { csrfmiddlewaretoken: '{{ csrf_token }}' },
+            success: function(data) {
+                if (data.success) {
+                    row.fadeOut(300, function() {
+                        $(this).remove();
+                        totalConteos.text(Math.max(0, parseInt(totalConteos.text()) - 1));
+
+                        if (listaConteos.find('tr').length === 0) {
+                            listaConteos.html(`
+                                <tr id="sinConteos">
+                                    <td colspan="5" class="text-center text-muted py-4">
+                                        <i class="fas fa-inbox fa-2x mb-2"></i>
+                                        <p class="mb-0">No hay conteos registrados</p>
+                                    </td>
+                                </tr>
+                            `);
+                        }
+                    });
+                }
+            }
+        });
+    });
+
+    // Confirmar antes de finalizar
+    $('#formFinalizar').on('submit', function(e) {
+        if (parseInt(totalConteos.text()) === 0) {
+            e.preventDefault();
+            alert('Debe registrar al menos un conteo antes de finalizar.');
+            return false;
+        }
+        return confirm('¿Finalizar sesion y ver diferencias?');
+    });
+});
+</script>
+{% endblock %}
