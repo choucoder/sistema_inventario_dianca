@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+
+{% block title %}Historial de Salidas{% endblock %}
+
+{% block page_title %}Historial de Salidas{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item active">Salidas</li>
+{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+            <i class="fas fa-list mr-2"></i>
+            Salidas Registradas
+        </h3>
+        <div class="card-tools">
+            <a href="{% url 'salida_registrar' %}" class="btn btn-danger btn-sm">
+                <i class="fas fa-plus"></i> Nueva Salida
+            </a>
+            <a href="{% url 'exportar_reporte_salidas' %}?{{ request.GET.urlencode }}" class="btn btn-success btn-sm">
+                <i class="fas fa-file-excel"></i> Exportar a Excel
+            </a>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- Filtros -->
+        <form method="get" class="mb-3">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="fecha_desde">Fecha Desde</label>
+                        <input type="date" class="form-control" id="fecha_desde" name="fecha_desde" value="{{ filtros.fecha_desde }}">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="fecha_hasta">Fecha Hasta</label>
+                        <input type="date" class="form-control" id="fecha_hasta" name="fecha_hasta" value="{{ filtros.fecha_hasta }}">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="producto">Producto</label>
+                        <input type="text" class="form-control" id="producto" name="producto" value="{{ filtros.producto }}" placeholder="Codigo o nombre">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="receptor">Receptor</label>
+                        <input type="text" class="form-control" id="receptor" name="receptor" value="{{ filtros.receptor }}" placeholder="Quien recibio">
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-filter"></i> Filtrar
+            </button>
+            <a href="{% url 'salida_historial' %}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Limpiar
+            </a>
+        </form>
+
+        <!-- Tabla -->
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Producto</th>
+                        <th>Cantidad</th>
+                        <th>Receptor</th>
+                        <th>Registrado por</th>
+                        <th>Motivo</th>
+                        <th style="width: 100px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for salida in salidas %}
+                    <tr>
+                        <td>{{ salida.created_at|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            <strong>{{ salida.product.name }}</strong>
+                            <br>
+                            <small class="text-muted"><code>{{ salida.product.code }}</code></small>
+                        </td>
+                        <td>
+                            <span class="badge badge-danger">
+                                -{{ salida.quantity }} {{ salida.product.unit }}
+                            </span>
+                        </td>
+                        <td>{{ salida.receptor }}</td>
+                        <td>{{ salida.user.get_full_name|default:salida.user.username }}</td>
+                        <td>{{ salida.motivo|truncatewords:10 }}</td>
+                        <td>
+                            <a href="{% url 'salida_detalle' salida.pk %}" class="btn btn-info btn-xs" title="Ver detalle">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">
+                            <i class="fas fa-inbox fa-3x mb-2"></i>
+                            <p>No hay salidas registradas</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

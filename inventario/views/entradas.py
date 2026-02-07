@@ -187,6 +187,41 @@ def buscar_producto(request):
 
 
 @login_required
+def buscar_productos_autocomplete(request):
+    """
+    Endpoint para busqueda asincrona de productos por nombre o codigo.
+    Retorna una lista de productos que coinciden con el termino de busqueda.
+    """
+    term = request.GET.get('term', '').strip()
+
+    if not term or len(term) < 2:
+        return JsonResponse([], safe=False)
+
+    # Buscar productos activos por codigo o nombre
+    productos = Product.objects.filter(
+        Q(code__icontains=term) | Q(name__icontains=term),
+        status='active'
+    ).select_related('category').order_by('name')[:15]
+
+    resultados = []
+    for producto in productos:
+        resultados.append({
+            'id': producto.id,
+            'code': producto.code,
+            'name': producto.name,
+            'label': f"{producto.code} - {producto.name}",
+            'value': producto.code,
+            'category': producto.category.name,
+            'unit': producto.unit,
+            'stock_actual': producto.stock_actual,
+            'min_stock': producto.min_stock,
+            'location': producto.location or 'No especificada',
+        })
+
+    return JsonResponse(resultados, safe=False)
+
+
+@login_required
 def entrada_detalle(request, pk):
     entrada = get_object_or_404(
         Entrada.objects.select_related('product', 'provider', 'user'),

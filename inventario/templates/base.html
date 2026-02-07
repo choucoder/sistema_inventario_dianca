@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -10,6 +11,20 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css">
+    <style>
+        .brand-image-custom {
+            max-height: 33px;
+            width: auto;
+            margin-left: 0.8rem;
+            margin-right: 0.5rem;
+        }
+        .user-panel-img {
+            width: 2.1rem;
+            height: 2.1rem;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+    </style>
     {% block extra_css %}{% endblock %}
 </head>
 <body class="hold-transition sidebar-mini">
@@ -40,7 +55,7 @@
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
         <!-- Brand Logo -->
         <a href="{% url 'dashboard' %}" class="brand-link">
-            <i class="fas fa-warehouse brand-image ml-3" style="font-size: 1.8rem;"></i>
+            <img src="{% static 'inventario/images/dianca.png' %}" alt="DIANCA Logo" class="brand-image-custom">
             <span class="brand-text font-weight-light">DIANCA Inventario</span>
         </a>
 
@@ -50,7 +65,7 @@
             <div class="user-panel mt-3 pb-3 mb-3 d-flex">
                 <div class="image">
                     <a href="{% url 'perfil_edit' %}">
-                        <i class="fas fa-user-circle fa-2x text-light"></i>
+                        <img src="{% static 'inventario/images/perfil.jpeg' %}" class="user-panel-img" alt="User Image">
                     </a>
                 </div>
                 <div class="info">
@@ -108,6 +123,29 @@
                             </li>
                             <li class="nav-item">
                                 <a href="{% url 'entrada_historial' %}" class="nav-link {% if request.resolver_match.url_name == 'entrada_historial' or request.resolver_match.url_name == 'entrada_detalle' %}active{% endif %}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Historial</p>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item {% if 'salida' in request.resolver_match.url_name %}menu-open{% endif %}">
+                        <a href="#" class="nav-link {% if 'salida' in request.resolver_match.url_name %}active{% endif %}">
+                            <i class="nav-icon fas fa-sign-out-alt"></i>
+                            <p>
+                                Salidas
+                                <i class="right fas fa-angle-left"></i>
+                            </p>
+                        </a>
+                        <ul class="nav nav-treeview">
+                            <li class="nav-item">
+                                <a href="{% url 'salida_registrar' %}" class="nav-link {% if request.resolver_match.url_name == 'salida_registrar' %}active{% endif %}">
+                                    <i class="far fa-circle nav-icon"></i>
+                                    <p>Registrar Salida</p>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="{% url 'salida_historial' %}" class="nav-link {% if request.resolver_match.url_name == 'salida_historial' or request.resolver_match.url_name == 'salida_detalle' %}active{% endif %}">
                                     <i class="far fa-circle nav-icon"></i>
                                     <p>Historial</p>
                                 </a>

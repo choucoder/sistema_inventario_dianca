@@ -12,6 +12,7 @@ urlpatterns = [
     path('entradas/registrar/', views.entrada_registrar, name='entrada_registrar'),
     path('entradas/<int:pk>/', views.entrada_detalle, name='entrada_detalle'),
     path('api/buscar-producto/', views.buscar_producto, name='buscar_producto'),
+    path('api/buscar-productos-autocomplete/', views.buscar_productos_autocomplete, name='buscar_productos_autocomplete'),
 
     path('inventario-fisico/', views.inventario_sesiones, name='inventario_sesiones'),
     path('inventario-fisico/iniciar/', views.inventario_iniciar, name='inventario_iniciar'),
@@ -22,6 +23,7 @@ urlpatterns = [
     path('inventario-fisico/<int:sesion_id>/conciliar/', views.inventario_conciliar, name='inventario_conciliar'),
     path('inventario-fisico/<int:sesion_id>/cancelar/', views.inventario_cancelar, name='inventario_cancelar'),
     path('inventario-fisico/<int:sesion_id>/eliminar-conteo/<int:conteo_id>/', views.inventario_eliminar_conteo, name='inventario_eliminar_conteo'),
+    path('inventario-fisico/<int:sesion_id>/exportar-auditoria/', views.exportar_reporte_auditoria, name='exportar_reporte_auditoria'),
 
     path('categorias/', views.categoria_list, name='categoria_list'),
     path('categorias/crear/', views.categoria_create, name='categoria_create'),
@@ -37,6 +39,12 @@ urlpatterns = [
     path('productos/crear/', views.producto_create, name='producto_create'),
     path('productos/<int:pk>/editar/', views.producto_edit, name='producto_edit'),
     path('productos/<int:pk>/eliminar/', views.producto_delete, name='producto_delete'),
+    path('productos/exportar-inventario/', views.exportar_inventario_actual, name='exportar_inventario_actual'),
+
+    path('salidas/', views.salida_historial, name='salida_historial'),
+    path('salidas/registrar/', views.salida_registrar, name='salida_registrar'),
+    path('salidas/<int:pk>/', views.salida_detalle, name='salida_detalle'),
+    path('salidas/exportar/', views.exportar_reporte_salidas, name='exportar_reporte_salidas'),
 
     path('usuarios/', views.usuario_list, name='usuario_list'),
     path('usuarios/crear/', views.usuario_create, name='usuario_create'),

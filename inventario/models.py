@@ -119,3 +119,25 @@ class DetalleConteo(models.Model):
         verbose_name = 'Detalle de Conteo'
         verbose_name_plural = 'Detalles de Conteo'
         unique_together = ['sesion', 'product']
+
+
+class Salida(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='salidas_registradas')
+    receptor = models.CharField(max_length=200, help_text='Persona o area que recibe el producto')
+    quantity = models.IntegerField()
+    motivo = models.TextField(help_text='Motivo o razon de la salida')
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(default=timezone.now)
+
+    def save(self, *args, **kwargs):
+        # Restar del stock al crear una salida
+        if not self.pk:  # Solo al crear, no al editar
+            self.product.stock_actual -= self.quantity
+            self.product.save()
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = 'Salida'
+        verbose_name_plural = 'Salidas'
+        ordering = ['-created_at']

@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -28,10 +29,14 @@
             color: #fff;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
-        .login-logo i {
-            font-size: 3rem;
+        .login-logo img {
+            max-height: 80px;
+            width: auto;
             margin-bottom: 10px;
             display: block;
+            margin-left: auto;
+            margin-right: auto;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
         }
         .btn-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -69,7 +74,7 @@
 <div class="login-box">
     <div class="login-logo">
         <a href="#">
-            <i class="fas fa-warehouse"></i>
+            <img src="{% static 'inventario/images/dianca.png' %}" alt="DIANCA Logo">
             <b>DIANCA</b> Inventario
         </a>
     </div>

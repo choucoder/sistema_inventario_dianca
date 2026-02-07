@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 
-{% block title %}Registrar Entrada{% endblock %}
+{% block title %}Registrar Salida{% endblock %}
 
-{% block page_title %}Registrar Entrada de Mercancia{% endblock %}
+{% block page_title %}Registrar Salida de Producto{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
@@ -61,21 +61,21 @@
 {% endblock %}
 
 {% block breadcrumb %}
-<li class="breadcrumb-item"><a href="{% url 'entrada_historial' %}">Entradas</a></li>
+<li class="breadcrumb-item"><a href="{% url 'salida_historial' %}">Salidas</a></li>
 <li class="breadcrumb-item active">Registrar</li>
 {% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-md-8">
-        <div class="card card-primary">
+        <div class="card card-danger">
             <div class="card-header">
                 <h3 class="card-title">
-                    <i class="fas fa-truck-loading mr-2"></i>
-                    Nueva Entrada
+                    <i class="fas fa-sign-out-alt mr-2"></i>
+                    Nueva Salida
                 </h3>
             </div>
-            <form method="post" id="formEntrada">
+            <form method="post" id="formSalida">
                 {% csrf_token %}
                 <div class="card-body">
                     <!-- Busqueda de producto -->
@@ -104,11 +104,11 @@
                             </div>
                         </div>
                         <small class="form-text text-muted">
-                            <i class="fas fa-info-circle"></i> Escriba el nombre o codigo del producto para buscar. Presione Enter o haga clic en Verificar.
+                            <i class="fas fa-info-circle"></i> Escriba el nombre o codigo del producto para buscar.
                         </small>
                     </div>
 
-                    <!-- Info del producto (se muestra al buscar) -->
+                    <!-- Info del producto -->
                     <div id="productInfo" class="card card-outline card-info mb-3" style="display: none;">
                         <div class="card-header">
                             <h3 class="card-title">
@@ -125,7 +125,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <p class="mb-1">
-                                        <strong>Stock Actual:</strong>
+                                        <strong>Stock Disponible:</strong>
                                         <span id="productStock" class="badge">-</span>
                                     </p>
                                     <p class="mb-1"><strong>Stock Minimo:</strong> <span id="productMinStock">-</span></p>
@@ -135,7 +135,7 @@
                         </div>
                     </div>
 
-                    <!-- Error de producto no encontrado -->
+                    <!-- Error -->
                     <div id="productError" class="alert alert-danger" style="display: none;">
                         <i class="fas fa-exclamation-circle mr-2"></i>
                         <span id="productErrorMsg"></span>
@@ -144,17 +144,18 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="provider">
-                                    Proveedor <span class="text-danger">*</span>
+                                <label for="receptor">
+                                    Receptor <span class="text-danger">*</span>
                                 </label>
-                                <select class="form-control" id="provider" name="provider" required>
-                                    <option value="">-- Seleccione Proveedor --</option>
-                                    {% for prov in proveedores %}
-                                    <option value="{{ prov.id }}" {% if provider_id|stringformat:"s" == prov.id|stringformat:"s" %}selected{% endif %}>
-                                        {{ prov.name }} ({{ prov.rif }})
-                                    </option>
-                                    {% endfor %}
-                                </select>
+                                <input type="text"
+                                       class="form-control"
+                                       id="receptor"
+                                       name="receptor"
+                                       value="{{ receptor }}"
+                                       placeholder="Persona o area que recibe"
+                                       maxlength="200"
+                                       required>
+                                <small class="form-text text-muted">Quien recibe el producto</small>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -174,33 +175,24 @@
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="total_cost">Costo Total</label>
-                                <div class="input-group">
-                                    <div class="input-group-prepend">
-                                        <span class="input-group-text">$</span>
-                                    </div>
-                                    <input type="number"
-                                           class="form-control"
-                                           id="total_cost"
-                                           name="total_cost"
-                                           value="{{ total_cost }}"
-                                           min="0"
-                                           step="0.01"
-                                           placeholder="0.00">
-                                </div>
-                            </div>
-                        </div>
+                    <div class="form-group">
+                        <label for="motivo">
+                            Motivo <span class="text-danger">*</span>
+                        </label>
+                        <textarea class="form-control"
+                                  id="motivo"
+                                  name="motivo"
+                                  rows="3"
+                                  placeholder="Indique el motivo de la salida..."
+                                  required>{{ motivo }}</textarea>
                     </div>
                 </div>
 
                 <div class="card-footer">
-                    <button type="submit" class="btn btn-primary" id="btnSubmit">
-                        <i class="fas fa-save mr-1"></i> Registrar Entrada
+                    <button type="submit" class="btn btn-danger" id="btnSubmit">
+                        <i class="fas fa-save mr-1"></i> Registrar Salida
                     </button>
-                    <a href="{% url 'entrada_historial' %}" class="btn btn-secondary">
+                    <a href="{% url 'salida_historial' %}" class="btn btn-secondary">
                         <i class="fas fa-times mr-1"></i> Cancelar
                     </a>
                 </div>
@@ -219,11 +211,11 @@
             <div class="card-body">
                 <ol class="mb-0">
                     <li class="mb-2">Escanee o ingrese el codigo del producto</li>
-                    <li class="mb-2">Verifique que la informacion del producto sea correcta</li>
-                    <li class="mb-2">Seleccione el proveedor de la mercancia</li>
-                    <li class="mb-2">Ingrese la cantidad recibida</li>
-                    <li class="mb-2">Opcionalmente ingrese el costo total</li>
-                    <li>Haga clic en "Registrar Entrada"</li>
+                    <li class="mb-2">Verifique el stock disponible</li>
+                    <li class="mb-2">Ingrese quien recibe el producto</li>
+                    <li class="mb-2">Indique la cantidad a retirar</li>
+                    <li class="mb-2">Describa el motivo de la salida</li>
+                    <li>Haga clic en "Registrar Salida"</li>
                 </ol>
             </div>
         </div>
@@ -237,8 +229,8 @@
             </div>
             <div class="card-body">
                 <p class="mb-0">
-                    Al registrar la entrada, el stock del producto se actualizara automaticamente.
-                    Verifique la cantidad antes de confirmar.
+                    Al registrar la salida, el stock del producto se reducira automaticamente.
+                    Verifique la cantidad y disponibilidad antes de confirmar.
                 </p>
             </div>
         </div>
@@ -271,23 +263,17 @@ $(document).ready(function() {
         },
         minLength: 2,
         select: function(event, ui) {
-            // Cuando se selecciona un producto del autocomplete
             inputCode.val(ui.item.code);
-
-            // Buscar y mostrar informacion del producto
             setTimeout(function() {
                 buscarProducto();
             }, 100);
-
             return false;
         },
         focus: function(event, ui) {
-            // Mostrar el codigo cuando se navega por las opciones
             inputCode.val(ui.item.code);
             return false;
         }
     }).autocomplete("instance")._renderItem = function(ul, item) {
-        // Personalizar como se muestran los items en el autocomplete
         return $("<li>")
             .append("<div style='padding: 5px 0;'>" +
                     "<div><strong style='color: #007bff;'><i class='fas fa-barcode'></i> " + item.code + "</strong> - " + item.name + "</div>" +
@@ -320,14 +306,18 @@ $(document).ready(function() {
 
                     const stockBadge = $('#productStock');
                     stockBadge.text(data.product.stock_actual);
-                    stockBadge.removeClass('badge-success badge-danger');
-                    stockBadge.addClass('badge-' + data.product.stock_status);
+                    stockBadge.removeClass('badge-success badge-danger badge-warning');
 
                     const alertDiv = $('#stockAlert');
-                    if (data.product.stock_status === 'danger') {
-                        alertDiv.html('<span class="text-danger"><i class="fas fa-exclamation-triangle"></i> ' + data.product.stock_message + '</span>');
+                    if (data.product.stock_actual <= 0) {
+                        stockBadge.addClass('badge-danger');
+                        alertDiv.html('<span class="text-danger"><i class="fas fa-exclamation-triangle"></i> SIN STOCK DISPONIBLE</span>');
+                    } else if (data.product.stock_actual <= data.product.min_stock) {
+                        stockBadge.addClass('badge-warning');
+                        alertDiv.html('<span class="text-warning"><i class="fas fa-exclamation-triangle"></i> Stock bajo</span>');
                     } else {
-                        alertDiv.html('<span class="text-success"><i class="fas fa-check-circle"></i> ' + data.product.stock_message + '</span>');
+                        stockBadge.addClass('badge-success');
+                        alertDiv.html('<span class="text-success"><i class="fas fa-check-circle"></i> Stock disponible</span>');
                     }
 
                     productInfo.show();
@@ -348,7 +338,6 @@ $(document).ready(function() {
         });
     }
 
-    // Buscar al presionar Enter en el campo de codigo
     inputCode.on('keypress', function(e) {
         if (e.which === 13) {
             e.preventDefault();
@@ -356,10 +345,8 @@ $(document).ready(function() {
         }
     });
 
-    // Buscar al hacer clic en el boton
     btnBuscar.on('click', buscarProducto);
 
-    // Buscar automaticamente si ya hay un codigo (recarga por error)
     if (inputCode.val().trim()) {
         buscarProducto();
     }

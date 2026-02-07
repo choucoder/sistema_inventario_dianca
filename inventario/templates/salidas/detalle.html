@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}Detalle de Salida{% endblock %}
+
+{% block page_title %}Detalle de Salida #{{ salida.id }}{% endblock %}
+
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="{% url 'salida_historial' %}">Salidas</a></li>
+<li class="breadcrumb-item active">Detalle</li>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-sign-out-alt mr-2"></i>
+                    Informacion de la Salida
+                </h3>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">Fecha:</dt>
+                    <dd class="col-sm-9">{{ salida.created_at|date:"d/m/Y H:i" }}</dd>
+
+                    <dt class="col-sm-3">Producto:</dt>
+                    <dd class="col-sm-9">
+                        <strong>{{ salida.product.name }}</strong>
+                        <br>
+                        <small class="text-muted">Codigo: <code>{{ salida.product.code }}</code></small>
+                    </dd>
+
+                    <dt class="col-sm-3">Categoria:</dt>
+                    <dd class="col-sm-9">{{ salida.product.category.name }}</dd>
+
+                    <dt class="col-sm-3">Cantidad:</dt>
+                    <dd class="col-sm-9">
+                        <span class="badge badge-danger badge-lg">
+                            <i class="fas fa-minus"></i> {{ salida.quantity }} {{ salida.product.unit }}
+                        </span>
+                    </dd>
+
+                    <dt class="col-sm-3">Receptor:</dt>
+                    <dd class="col-sm-9">
+                        <i class="fas fa-user"></i> {{ salida.receptor }}
+                    </dd>
+
+                    <dt class="col-sm-3">Motivo:</dt>
+                    <dd class="col-sm-9">
+                        <div class="alert alert-light">
+                            {{ salida.motivo }}
+                        </div>
+                    </dd>
+
+                    <dt class="col-sm-3">Registrado por:</dt>
+                    <dd class="col-sm-9">{{ salida.user.get_full_name|default:salida.user.username }}</dd>
+                </dl>
+            </div>
+            <div class="card-footer">
+                <a href="{% url 'salida_historial' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Volver al Historial
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card card-info">
+            <div class="card-header">
+                <h3 class="card-title">
+                    <i class="fas fa-box mr-2"></i>
+                    Informacion del Producto
+                </h3>
+            </div>
+            <div class="card-body">
+                <p class="mb-2">
+                    <strong>Stock Actual:</strong>
+                    <span class="badge {% if salida.product.stock_actual <= salida.product.min_stock %}badge-danger{% else %}badge-success{% endif %}">
+                        {{ salida.product.stock_actual }} {{ salida.product.unit }}
+                    </span>
+                </p>
+                <p class="mb-2">
+                    <strong>Stock Minimo:</strong> {{ salida.product.min_stock }} {{ salida.product.unit }}
+                </p>
+                <p class="mb-2">
+                    <strong>Ubicacion:</strong> {{ salida.product.location|default:"No especificada" }}
+                </p>
+                {% if salida.product.stock_actual <= salida.product.min_stock %}
+                <div class="alert alert-warning mt-3">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    El producto esta en alerta de stock bajo
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -17,12 +17,14 @@ from .productos import (
     producto_create,
     producto_edit,
     producto_delete,
+    exportar_inventario_actual,
 )
 from .entradas import (
     entrada_registrar,
     entrada_historial,
     entrada_detalle,
     buscar_producto,
+    buscar_productos_autocomplete,
 )
 from .usuarios import (
     usuario_list,
@@ -40,5 +42,12 @@ from .inventario_fisico import (
     inventario_conciliar,
     inventario_cancelar,
     inventario_eliminar_conteo,
+    exportar_reporte_auditoria,
+)
+from .salidas import (
+    salida_registrar,
+    salida_historial,
+    salida_detalle,
+    exportar_reporte_salidas,
 )
 from .perfil import perfil_edit
